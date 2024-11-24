@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/teacher-substitution-app/static/css/main.e6c13ad2.css",
-    "main.js": "/teacher-substitution-app/static/js/main.0d87d4db.js",
+    "main.css": "/teacher-substitution-app/static/css/main.6d87e10d.css",
+    "main.js": "/teacher-substitution-app/static/js/main.4151b2ac.js",
     "static/js/453.3e8c905d.chunk.js": "/teacher-substitution-app/static/js/453.3e8c905d.chunk.js",
     "index.html": "/teacher-substitution-app/index.html",
-    "main.e6c13ad2.css.map": "/teacher-substitution-app/static/css/main.e6c13ad2.css.map",
-    "main.0d87d4db.js.map": "/teacher-substitution-app/static/js/main.0d87d4db.js.map",
+    "main.6d87e10d.css.map": "/teacher-substitution-app/static/css/main.6d87e10d.css.map",
+    "main.4151b2ac.js.map": "/teacher-substitution-app/static/js/main.4151b2ac.js.map",
     "453.3e8c905d.chunk.js.map": "/teacher-substitution-app/static/js/453.3e8c905d.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.e6c13ad2.css",
-    "static/js/main.0d87d4db.js"
+    "static/css/main.6d87e10d.css",
+    "static/js/main.4151b2ac.js"
   ]
 }

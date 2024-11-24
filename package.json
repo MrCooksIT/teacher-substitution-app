@@ -2,7 +2,7 @@
   "name": "teacher-substitution-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://[your-username].github.io/teacher-substitution-app",
+  "homepage": "https://MrCooksIT.github.io/teacher-substitution-app",
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.4",
     "@radix-ui/react-slot": "^1.0.2",
@@ -22,7 +22,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "CI=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bell, Calendar, Settings, Users } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 
 const DashboardLayout = () => {
     const stats = [

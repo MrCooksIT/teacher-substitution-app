@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Plus, Save, Trash, Copy, Check } from 'lucide-react';
 import TeacherSelect from './TeacherSelect';
-import { saveTimetable, loadTimetable } from '../services/timetableService';
+import { saveTimetable, loadTimetable } from '../../services/TimetableService';
 
 const commonSubjects = [
     'Mathematics', 'English', 'Science', 'History', 'Geography',

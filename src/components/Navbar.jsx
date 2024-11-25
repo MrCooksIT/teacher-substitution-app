@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import logo from '../images/logo.png';
 
 export default function Navbar() {
     const location = useLocation();
@@ -10,11 +11,7 @@ export default function Navbar() {
                 <div className="flex h-16 items-center justify-between">
                     <div className="flex space-x-8">
                         <div className="flex items-center space-x-3">
-                            <img
-                                src="public\images\logo.png"
-                                alt="SJMC Logo"
-                                className="h-12"
-                            />
+                            <img src={logo} alt="SJMC Logo" className="h-12" />
                         </div>
                         <div className="text-gray-900">
                             <div className="font-bold text-lg">SJMC</div>

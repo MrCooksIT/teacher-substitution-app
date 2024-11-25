@@ -16,7 +16,7 @@ export const CLASSES = ['Gr8', 'Gr9', 'Gr10', 'Gr11', 'Gr12'];
 export const SUBJECTS = [
     'Math', 'English', 'Phyiscs', 'Life Sciences', 'Chemistry', 'Math Lit',
     'History', 'Geography', 'Accounting', 'IT', 'EMS', 'Life Orientation',
-    'Afrikaans', 'isiXhosa', 'Art', 'Music', 'Business Studies','PE'
+    'Afrikaans', 'isiXhosa', 'Art', 'Music', 'Business Studies','PE','Technology'
 ];
 
 // Helper function to create empty timetable structure

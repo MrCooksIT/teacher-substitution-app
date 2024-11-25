@@ -11,7 +11,7 @@ export default function Navbar() {
                     <div className="flex space-x-8">
                         <div className="flex items-center space-x-3">
                             <img
-                                src="/images/logo.png"
+                                src="public\images\logo.png"
                                 alt="School Logo"
                                 className="h-12"
                             />

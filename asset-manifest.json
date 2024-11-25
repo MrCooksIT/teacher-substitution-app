@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/teacher-substitution-app/static/css/main.6d87e10d.css",
-    "main.js": "/teacher-substitution-app/static/js/main.4151b2ac.js",
-    "static/js/453.3e8c905d.chunk.js": "/teacher-substitution-app/static/js/453.3e8c905d.chunk.js",
-    "index.html": "/teacher-substitution-app/index.html",
-    "main.6d87e10d.css.map": "/teacher-substitution-app/static/css/main.6d87e10d.css.map",
-    "main.4151b2ac.js.map": "/teacher-substitution-app/static/js/main.4151b2ac.js.map",
-    "453.3e8c905d.chunk.js.map": "/teacher-substitution-app/static/js/453.3e8c905d.chunk.js.map"
+    "main.css": "/static/css/main.389c8d5f.css",
+    "main.js": "/static/js/main.288ea9d8.js",
+    "static/js/453.3e8c905d.chunk.js": "/static/js/453.3e8c905d.chunk.js",
+    "index.html": "/index.html",
+    "main.389c8d5f.css.map": "/static/css/main.389c8d5f.css.map",
+    "main.288ea9d8.js.map": "/static/js/main.288ea9d8.js.map",
+    "453.3e8c905d.chunk.js.map": "/static/js/453.3e8c905d.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.6d87e10d.css",
-    "static/js/main.4151b2ac.js"
+    "static/css/main.389c8d5f.css",
+    "static/js/main.288ea9d8.js"
   ]
 }

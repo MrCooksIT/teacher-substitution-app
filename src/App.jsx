@@ -11,33 +11,27 @@ import MobileSubstitutionManager from './components/MobileSubstitutionManager';
 function App() {
   return (
     <NotificationProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          {/* Only show navbar on non-mobile routes */}
+    <Router basename="/teacher-substitution-app">
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="container mx-auto p-4">
           <Routes>
-            <Route path="/m/*" element={null} />
-            <Route path="*" element={<Navbar />} />
+            {/* Redirect /dashboard to root */}
+            <Route path="/dashboard" element={<Navigate to="/" replace />} />
+            
+            {/* Main routes */}
+            <Route path="/" element={<TimetableEditor />} />
+            <Route path="/substitutions" element={<SubstitutionManager />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            
+            {/* Catch any other routes and redirect to root */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-
-          <main className="container mx-auto p-4">
-            <Routes>
-              {/* Mobile route */}
-              <Route path="/m/substitutions" element={<MobileSubstitutionManager />} />
-
-              {/* Desktop routes */}
-              <Route path="/dashboard" element={<Navigate to="/" replace />} />
-              <Route path="/" element={<TimetableEditor />} />
-              <Route path="/substitutions" element={<SubstitutionManager />} />
-              <Route path="/admin" element={<AdminPanel />} />
-
-              {/* Catch all */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    </NotificationProvider>
-  );
+        </main>
+      </div>
+    </Router>
+  </NotificationProvider>
+);
 }
 
 export default App;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Save, Loader2 } from 'lucide-react';
-import { getAllTeachers, getTeacherTimetable, saveTimetable } from './/../services/timetableService';
+import { getAllTeachers, getTeacherTimetable, saveTimetable } from '../services/timetableService';
 import { useNotification } from '../contexts/NotificationContext';
 import { UserCircle2, Calendar } from 'lucide-react';
 import {

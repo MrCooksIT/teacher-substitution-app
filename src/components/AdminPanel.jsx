@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNotification } from '../contexts/NotificationContext';
-import { getAllTeachers, updateTeacher, addTeacher, removeTeacher } from './/../services/timetableService';
+import { getAllTeachers, updateTeacher, addTeacher, removeTeacher } from '../services/timetableService';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import {
     Loader2, Edit2, Save, Trash2, X, UserPlus,

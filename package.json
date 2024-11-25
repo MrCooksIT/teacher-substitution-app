@@ -2,11 +2,9 @@
   "name": "teacher-substitution-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://MrCooksIT.github.io/teacher-substitution-app",
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
     "@radix-ui/react-dialog": "^1.0.4",
-    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-slot": "^1.0.2",
     "@shadcn/ui": "latest",
     "@supabase/supabase-js": "^2.39.0",
     "@testing-library/jest-dom": "^5.17.0",
@@ -24,9 +22,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "CI=false react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "dev": "react-scripts start",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },

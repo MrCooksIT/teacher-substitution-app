@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Save, Loader2 } from 'lucide-react';
-import { getAllTeachers, getTeacherTimetable, saveTimetable } from './services/timetableService';
+import { getAllTeachers, getTeacherTimetable, saveTimetable } from './/../services/timetableService';
 import { useNotification } from '../contexts/NotificationContext';
 import { UserCircle2, Calendar } from 'lucide-react';
 import {
@@ -204,7 +204,7 @@ export default function TimetableEditor() {
                                                                         value={editValue.class}
                                                                         onChange={e => setEditValue(prev => ({ ...prev, class: e.target.value }))}
                                                                         className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                                                                        size={1} 
+                                                                        size={1}
                                                                         autoFocus
                                                                     >
                                                                         <option value="">Select Grade</option>

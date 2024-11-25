@@ -26,12 +26,15 @@ export default function TimetableEditor() {
         const loadTeachers = async () => {
             try {
                 const teachersList = await getAllTeachers();
-                setTeachers(teachersList);
+                // Sort teachers by code when loading
+                setTeachers(teachersList.sort((a, b) => a.code.localeCompare(b.code)));
                 setLoading(false);
             } catch (error) {
                 showNotification('Failed to load teachers: ' + error.message, 'error');
                 setLoading(false);
             }
+
+
         };
 
         loadTeachers();
@@ -136,11 +139,13 @@ export default function TimetableEditor() {
                             className="flex-1 p-2 border rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[250px]"
                         >
                             <option value="">Select a teacher</option>
-                            {teachers.map(teacher => (
-                                <option key={teacher.id} value={teacher.id}>
-                                    {teacher.code} - {teacher.name}
-                                </option>
-                            ))}
+                            {teachers
+                                .sort((a, b) => a.code.localeCompare(b.code))
+                                .map(teacher => (
+                                    <option key={teacher.id} value={teacher.id}>
+                                        {teacher.code} - {teacher.name}
+                                    </option>
+                                ))}
                         </select>
                     </div>
                     {selectedTeacher && (
@@ -156,6 +161,7 @@ export default function TimetableEditor() {
             </div>
 
             {/* Timetable */}
+            {/* Creates Grid interface in which drop down menues will appear and be populated via GRADE AND SUBJECT Constants */}
             {selectedTeacher ? (
                 <Card className="shadow-lg">
                     <CardHeader className="border-b">
@@ -171,9 +177,12 @@ export default function TimetableEditor() {
                             <table className="w-full border-collapse">
                                 <thead>
                                     <tr>
-                                        <th className="p-3 bg-gray-50 border-b font-medium text-gray-500 w-32"></th>
+                                        <th className="p-3 bg-gray-50 border-b font-medium text-gray-500 w-32">
+                                        </th>
                                         {DAYS.map(day => (
-                                            <th key={day} className="p-3 bg-gray-50 border-b font-medium text-gray-500">
+                                            <th key={day}
+                                                className="p-3 bg-gray-50 border-b font-medium text-gray-500 min-w-[180px] max-w-[180px]"
+                                            >
                                                 {day}
                                             </th>
                                         ))}
@@ -182,7 +191,7 @@ export default function TimetableEditor() {
                                 <tbody>
                                     {TEACHING_PERIODS.map((period) => (
                                         <tr key={period.time} className="border-b last:border-0">
-                                            <td className="p-3 bg-gray-50 w-32">
+                                            <td className="p-3 bg-gray-50 min-w-[120px] max-w-[120px]">
                                                 <div className="text-sm font-medium">{period.time}</div>
                                                 <div className="text-xs text-gray-500">{period.label}</div>
                                             </td>
@@ -191,14 +200,17 @@ export default function TimetableEditor() {
                                                 return (
                                                     <td
                                                         key={day}
-                                                        className={`p-3 border-l cursor-pointer transition-colors ${isSelected ? 'bg-blue-50' :
+                                                        className={`p-3 border-l cursor-pointer transition-colors min-w-[180px] max-w-[180px] ${isSelected ? 'bg-blue-50' :
                                                             timetableData[day]?.[period.time] === 'FREE' ? 'bg-gray-50' :
                                                                 'hover:bg-gray-50'
                                                             }`}
                                                         onClick={() => handleCellClick(period, day)}
                                                     >
                                                         {isSelected ? (
-                                                            <div className="relative p-2 bg-white shadow-lg rounded-lg border" onClick={e => e.stopPropagation()}>
+                                                            <div className="relative p-2 bg-white shadow-lg rounded-lg border"
+                                                                onClick={e => e.stopPropagation()}
+                                                                style={{ minWidth: '200px', maxWidth: '300px' }}
+                                                            >
                                                                 <div className="space-y-2">
                                                                     <select
                                                                         value={editValue.class}

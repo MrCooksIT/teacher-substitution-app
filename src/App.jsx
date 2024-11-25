@@ -1,7 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { NotificationProvider } from './contexts/NotificationContext';
-import TimetableEditor from './components/TimetableEditor';  // Updated import
+import TimetableEditor from './components/TimetableEditor';
 import SubstitutionManager from './components/SubstitutionManager';
 import AdminPanel from './components/AdminPanel';
 import Navbar from './components/Navbar';
@@ -15,9 +15,16 @@ function App() {
           <Navbar />
           <main className="container mx-auto p-4">
             <Routes>
-              <Route path="/" element={<TimetableEditor />} />  {/* Updated component */}
+              {/* Redirect /dashboard to root */}
+              <Route path="/dashboard" element={<Navigate to="/" replace />} />
+
+              {/* Main routes */}
+              <Route path="/" element={<TimetableEditor />} />
               <Route path="/substitutions" element={<SubstitutionManager />} />
               <Route path="/admin" element={<AdminPanel />} />
+
+              {/* Catch any other routes and redirect to root */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
         </div>

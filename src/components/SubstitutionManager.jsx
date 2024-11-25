@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import { Copy, Check, X, AlertCircle, Edit2 } from 'lucide-react';
+import {
+    Copy,
+    Check,
+    X,
+    AlertCircle,
+    Edit2,
+    Phone
+} from 'lucide-react';
 import { getAllTeachers, getTeacherTimetable } from '../services/timetableService';
 import { useNotification } from '../contexts/NotificationContext';
 import { TEACHING_PERIODS } from '../constants/timetable';
+import { Link } from 'react-router-dom';
 
 export default function SubstitutionManager() {
     const [loading, setLoading] = useState(true);
@@ -36,12 +44,10 @@ export default function SubstitutionManager() {
     const findAvailableTeachersForPeriod = async (occupiedTeachers, day, period, date) => {
         const available = [];
         for (const teacher of teachers) {
-            // Skip if teacher is already assigned to sub this period
             if (occupiedTeachers.includes(teacher.id)) continue;
 
             const timetable = await getTeacherTimetable(teacher.id);
             if (!timetable.periods[day] || timetable.periods[day][period] === 'FREE') {
-                // Get this teacher's substitution count for today
                 const todayCount = Object.values(periodSubstitutions)
                     .flat()
                     .filter(sub => sub.substituteId === teacher.id)
@@ -53,8 +59,6 @@ export default function SubstitutionManager() {
                 });
             }
         }
-
-        // Sort by today's substitution count
         return available.sort((a, b) => a.todayCount - b.todayCount);
     };
 
@@ -81,8 +85,6 @@ export default function SubstitutionManager() {
     const generateMessage = () => {
         let message = 'Good morning\n';
         const teacherSubs = {};
-
-        // Group substitutions by absent teacher
         Object.entries(periodSubstitutions).forEach(([periodKey, subs]) => {
             const selected = subs.find(sub => sub.selected);
             if (selected) {
@@ -93,8 +95,6 @@ export default function SubstitutionManager() {
                 teacherSubs[absentTeacher].push(selected);
             }
         });
-
-        // Generate message for each absent teacher
         Object.entries(teacherSubs).forEach(([absentTeacher, subs]) => {
             message += `\nSubs for ${absentTeacher}\n`;
             subs.sort((a, b) => {
@@ -204,6 +204,13 @@ export default function SubstitutionManager() {
 
     return (
         <div className="space-y-6">
+            <Link
+                to="/m/substitutions"
+                className="flex items-center gap-2 px-3 py-2 text-blue-500 hover:text-blue-600"
+            >
+                <Phone className="h-4 w-4" />
+                Open Mobile Version
+            </Link>
             <Card>
                 <CardHeader>
                     <CardTitle>Generate Substitution Message</CardTitle>

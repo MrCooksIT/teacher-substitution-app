@@ -12,18 +12,24 @@ function App() {
     <NotificationProvider>
       <Router>
         <div className="min-h-screen bg-gray-50">
-          <Navbar />
+          {/* Only show navbar on non-mobile routes */}
+          <Routes>
+            <Route path="/m/*" element={null} />
+            <Route path="*" element={<Navbar />} />
+          </Routes>
+
           <main className="container mx-auto p-4">
             <Routes>
-              {/* Redirect /dashboard to root */}
-              <Route path="/dashboard" element={<Navigate to="/" replace />} />
+              {/* Mobile route */}
+              <Route path="/m/substitutions" element={<MobileSubstitutionManager />} />
 
-              {/* Main routes */}
+              {/* Desktop routes */}
+              <Route path="/dashboard" element={<Navigate to="/" replace />} />
               <Route path="/" element={<TimetableEditor />} />
               <Route path="/substitutions" element={<SubstitutionManager />} />
               <Route path="/admin" element={<AdminPanel />} />
 
-              {/* Catch any other routes and redirect to root */}
+              {/* Catch all */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

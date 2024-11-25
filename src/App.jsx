@@ -6,6 +6,7 @@ import SubstitutionManager from './components/SubstitutionManager';
 import AdminPanel from './components/AdminPanel';
 import Navbar from './components/Navbar';
 import './styles/global.css';
+import MobileSubstitutionManager from './components/MobileSubstitutionManager';
 
 function App() {
   return (

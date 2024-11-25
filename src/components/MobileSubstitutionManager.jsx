@@ -1,26 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import {
-    Copy,
-    Check,
-    Loader2,
-    X,
-    AlertCircle,
-    Edit2,
-    Phone
+    Copy, Check, Loader2, X, AlertCircle,
+    Monitor, UserPlus, Calendar
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { getAllTeachers, getTeacherTimetable } from '../services/timetableService';
+import { useNotification } from '../contexts/NotificationContext';
+import { TEACHING_PERIODS } from '../constants/timetable';
 
 const MobileSubstitutionManager = () => {
     const [loading, setLoading] = useState(true);
     const [teachers, setTeachers] = useState([]);
+    const [showAdjustments, setShowAdjustments] = useState(false);
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [absentTeachers, setAbsentTeachers] = useState([]);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [substitutionPlan, setSubstitutionPlan] = useState(null);
     const [showCopied, setShowCopied] = useState(false);
     const [periodSubstitutions, setPeriodSubstitutions] = useState({});
-    const [showAdjustments, setShowAdjustments] = useState(false);
     const { showNotification } = useNotification();
 
     useEffect(() => {
@@ -202,13 +200,17 @@ const MobileSubstitutionManager = () => {
 
     return (
         <div className="space-y-4 max-w-md mx-auto pb-6">
-            <Link
-                to="/substitutions"
-                className="flex items-center gap-2 px-3 py-2 text-blue-500 hover:text-blue-600"
-            >
-                <Monitor className="h-4 w-4" />
-                Switch to Desktop Version
-            </Link>
+            {/* Link to desktop version */}
+            <div className="flex justify-end px-4">
+                <Link
+                    to="/substitutions"
+                    className="flex items-center gap-2 text-blue-500"
+                >
+                    <Monitor className="h-4 w-4" />
+                    Desktop Version
+                </Link>
+            </div>
+
             {/* Date Selection */}
             <Card>
                 <CardContent className="p-4">
@@ -230,13 +232,11 @@ const MobileSubstitutionManager = () => {
                         className="w-full p-3 border rounded-lg text-lg"
                     >
                         <option value="">Select absent teacher</option>
-                        {teachers
-                            .sort((a, b) => a.code.localeCompare(b.code))
-                            .map(teacher => (
-                                <option key={teacher.id} value={teacher.id}>
-                                    {teacher.code} - {teacher.name}
-                                </option>
-                            ))}
+                        {teachers.map(teacher => (
+                            <option key={teacher.id} value={teacher.id}>
+                                {teacher.code} - {teacher.name}
+                            </option>
+                        ))}
                     </select>
                     <button
                         onClick={handleAddAbsentTeacher}
@@ -278,13 +278,14 @@ const MobileSubstitutionManager = () => {
             )}
 
             {/* Generate Button */}
-            <button
-                onClick={generatePlan}
-                disabled={absentTeachers.length === 0}
-                className="w-full p-4 bg-green-500 text-white rounded-lg text-lg font-medium disabled:bg-gray-300"
-            >
-                Generate Substitutions
-            </button>
+            {absentTeachers.length > 0 && (
+                <button
+                    onClick={generatePlan}
+                    className="w-full p-4 bg-green-500 text-white rounded-lg text-lg font-medium"
+                >
+                    Generate Substitutions
+                </button>
+            )}
 
             {/* Substitution Plan */}
             {substitutionPlan && (
@@ -316,53 +317,9 @@ const MobileSubstitutionManager = () => {
                 </Card>
             )}
 
-            {/* Adjustments Section */}
-            {showAdjustments && periodSubstitutions && Object.entries(periodSubstitutions).length > 0 && (
-                <div className="space-y-4">
-                    {Object.entries(periodSubstitutions).map(([periodKey, subs]) => {
-                        const { time, class: className, absentTeacher } = subs[0].periodInfo;
-                        const periodNum = TEACHING_PERIODS.findIndex(p => p.time === time) + 1;
-
-                        return (
-                            <Card key={periodKey}>
-                                <CardHeader>
-                                    <CardTitle className="text-sm">
-                                        Period {periodNum} - {absentTeacher} - {className}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-2">
-                                        {subs.map(sub => (
-                                            <button
-                                                key={sub.substituteId}
-                                                onClick={() => {
-                                                    handleSelectSubstitute(periodKey, sub.substituteId);
-                                                    generateMessage();
-                                                }}
-                                                className={`w-full flex items-center justify-between p-3 rounded-lg ${sub.selected
-                                                    ? 'bg-green-100 text-green-800 border-2 border-green-500'
-                                                    : 'bg-gray-50 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                <div>
-                                                    <span className="font-medium">{sub.code}</span>
-                                                    <span className="mx-2">-</span>
-                                                    <span className="text-gray-600">{sub.name}</span>
-                                                </div>
-                                                {sub.todayCount > 0 && (
-                                                    <span className="text-sm text-orange-600 flex items-center gap-1">
-                                                        <AlertCircle className="h-4 w-4" />
-                                                        {sub.todayCount}
-                                                    </span>
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                        );
-                    })}
+            {loading && (
+                <div className="fixed inset-0 bg-white/80 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                 </div>
             )}
         </div>

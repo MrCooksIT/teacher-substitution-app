@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { Save, Loader2 } from 'lucide-react';
-import { getAllTeachers, getTeacherTimetable, saveTimetable } from '../services/timetableService';
+import { getAllTeachers, getTeacherTimetable, saveTimetable } from './services/timetableService';
 import { useNotification } from '../contexts/NotificationContext';
 import { UserCircle2, Calendar } from 'lucide-react';
 import {
@@ -35,12 +35,12 @@ export default function TimetableEditor() {
         };
 
         loadTeachers();
-    }, []); 
+    }, []);
 
     useEffect(() => {
         const loadTimetable = async () => {
             if (!selectedTeacher) return;
-            
+
             try {
                 setLoading(true);
                 const timetable = await getTeacherTimetable(selectedTeacher);
@@ -133,7 +133,7 @@ export default function TimetableEditor() {
                         <select
                             value={selectedTeacher || ''}
                             onChange={(e) => setSelectedTeacher(e.target.value)}
-                            className="flex-1 p-3 border rounded-lg text-lg font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[300px]"
+                            className="flex-1 p-2 border rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[250px]"
                         >
                             <option value="">Select a teacher</option>
                             {teachers.map(teacher => (
@@ -204,6 +204,7 @@ export default function TimetableEditor() {
                                                                         value={editValue.class}
                                                                         onChange={e => setEditValue(prev => ({ ...prev, class: e.target.value }))}
                                                                         className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                                                        size={1} 
                                                                         autoFocus
                                                                     >
                                                                         <option value="">Select Grade</option>
@@ -218,6 +219,7 @@ export default function TimetableEditor() {
                                                                             value={editValue.subject}
                                                                             onChange={e => setEditValue(prev => ({ ...prev, subject: e.target.value }))}
                                                                             className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                                                            size={1}
                                                                         >
                                                                             <option value="">Select Subject</option>
                                                                             {SUBJECTS.map(subject => (

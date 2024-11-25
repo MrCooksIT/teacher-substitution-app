@@ -12,7 +12,7 @@ export default function Navbar() {
                         <div className="flex items-center space-x-3">
                             <img
                                 src="public\images\logo.png"
-                                alt="School Logo"
+                                alt="SJMC Logo"
                                 className="h-12"
                             />
                         </div>

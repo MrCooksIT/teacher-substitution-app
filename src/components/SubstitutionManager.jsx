@@ -43,8 +43,12 @@ export default function SubstitutionManager() {
 
     const findAvailableTeachersForPeriod = async (occupiedTeachers, day, period, date) => {
         const available = [];
+        // Get the IDs of absent teachers to exclude them
+        const absentTeacherIds = absentTeachers.map(t => t.id);
+
         for (const teacher of teachers) {
-            if (occupiedTeachers.includes(teacher.id)) continue;
+            // Skip if teacher is absent or already assigned
+            if (absentTeacherIds.includes(teacher.id) || occupiedTeachers.includes(teacher.id)) continue;
 
             const timetable = await getTeacherTimetable(teacher.id);
             if (!timetable.periods[day] || timetable.periods[day][period] === 'FREE') {
@@ -60,6 +64,12 @@ export default function SubstitutionManager() {
             }
         }
         return available.sort((a, b) => a.todayCount - b.todayCount);
+    };
+
+    const clearSubstitutionPlan = () => {
+        setSubstitutionPlan(null);
+        setPeriodSubstitutions({});
+        setShowAdjustments(false);
     };
 
     const handleAddAbsentTeacher = () => {
@@ -213,7 +223,18 @@ export default function SubstitutionManager() {
             </Link>
             <Card>
                 <CardHeader>
-                    <CardTitle>Generate Substitution Message</CardTitle>
+                    <div className="flex justify-between items-center">
+                        <CardTitle>Generate Substitution Message</CardTitle>
+                        {substitutionPlan && (
+                            <button
+                                onClick={clearSubstitutionPlan}
+                                className="flex items-center gap-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                Clear Plan
+                            </button>
+                        )}
+                    </div>
                     <div className="space-y-4">
                         <div className="flex gap-4">
                             <select
@@ -223,7 +244,7 @@ export default function SubstitutionManager() {
                             >
                                 <option value="">Select absent teacher</option>
                                 {teachers
-                                    .sort((a, b) => a.code.localeCompare(b.code))
+                                    .filter(t => !absentTeachers.some(at => at.id === t.id)) // Filter out already selected teachers
                                     .map(teacher => (
                                         <option key={teacher.id} value={teacher.id}>
                                             {teacher.code} - {teacher.name}

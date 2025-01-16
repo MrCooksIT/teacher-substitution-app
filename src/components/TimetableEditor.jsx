@@ -20,7 +20,21 @@ export default function TimetableEditor() {
     const [editValue, setEditValue] = useState({ class: '', subject: '' });
     const [timetableData, setTimetableData] = useState({});
     const [copiedValue, setCopiedValue] = useState(null);
+    const [changeHistory, setChangeHistory] = useState([]);
+    const [currentHistoryIndex, setCurrentHistoryIndex] = useState(-1);
     const { showNotification } = useNotification();
+
+    // Add new change to history
+    const addToHistory = (newData) => {
+        const newHistory = changeHistory.slice(0, currentHistoryIndex + 1);
+        newHistory.push({
+            timetable: JSON.parse(JSON.stringify(timetableData)),
+            timestamp: Date.now()
+        });
+        setChangeHistory(newHistory);
+        setCurrentHistoryIndex(newHistory.length - 1);
+        setTimetableData(newData);
+    };
 
     // Load teachers on component mount
     useEffect(() => {
@@ -62,15 +76,24 @@ export default function TimetableEditor() {
             if (e.ctrlKey || e.metaKey) {
                 if (e.key === 'v' && copiedValue && selectedCell) {
                     const { day, period } = selectedCell;
-                    setTimetableData(prev => ({
-                        ...prev,
+                    const newData = {
+                        ...timetableData,
                         [day]: {
-                            ...prev[day],
+                            ...timetableData[day],
                             [period.time]: copiedValue
                         }
-                    }));
+                    };
+                    addToHistory(newData);
                     showNotification('Cell pasted');
                     e.preventDefault();
+                } else if (e.key === 'z') {
+                    e.preventDefault();
+                    if (currentHistoryIndex > 0) {
+                        const previousState = changeHistory[currentHistoryIndex - 1];
+                        setTimetableData(previousState.timetable);
+                        setCurrentHistoryIndex(currentHistoryIndex - 1);
+                        showNotification('Change undone');
+                    }
                 }
             }
         };
@@ -103,13 +126,14 @@ export default function TimetableEditor() {
             : formatClassSubject(editValue.class, editValue.subject);
 
         if (value) {
-            setTimetableData(prev => ({
-                ...prev,
+            const newData = {
+                ...timetableData,
                 [selectedCell.day]: {
-                    ...prev[selectedCell.day] || {},
+                    ...timetableData[selectedCell.day] || {},
                     [selectedCell.period.time]: value
                 }
-            }));
+            };
+            addToHistory(newData);
         }
         setSelectedCell(null);
     };

@@ -33,7 +33,6 @@ export default function SubstitutionManager() {
     const loadTeachers = async () => {
         try {
             const teachersList = await getAllTeachers();
-            // Sort teachers by code when loading
             setTeachers(teachersList.sort((a, b) => a.code.localeCompare(b.code)));
             setLoading(false);
         } catch (error) {
@@ -42,14 +41,23 @@ export default function SubstitutionManager() {
         }
     };
 
-    const findAvailableTeachersForPeriod = async (occupiedTeachers, day, period, date) => {
-        const available = [];
-        // Get the IDs of absent teachers to exclude them
-        const absentTeacherIds = absentTeachers.map(t => t.id);
+    const handleAddAbsentTeacher = () => {
+        if (!selectedTeacher) return;
+        const teacher = teachers.find(t => t.id === selectedTeacher);
+        if (teacher && !absentTeachers.find(t => t.id === teacher.id)) {
+            setAbsentTeachers(prev => [...prev, teacher]);
+            setSelectedTeacher('');
+        }
+    };
 
+    const findAvailableTeachersForPeriod = async (occupiedTeachers, day, period) => {
+        const available = [];
+        // Create a Set of absent teacher IDs for efficient lookup
+        const absentTeacherIds = new Set(absentTeachers.map(t => t.id));
+        
         for (const teacher of teachers) {
-            // Skip if teacher is absent or already assigned
-            if (absentTeacherIds.includes(teacher.id) || occupiedTeachers.includes(teacher.id)) continue;
+            // Skip if teacher is absent or already occupied
+            if (absentTeacherIds.has(teacher.id) || occupiedTeachers.includes(teacher.id)) continue;
 
             const timetable = await getTeacherTimetable(teacher.id);
             if (!timetable.periods[day] || timetable.periods[day][period] === 'FREE') {
@@ -67,72 +75,6 @@ export default function SubstitutionManager() {
         return available.sort((a, b) => a.todayCount - b.todayCount);
     };
 
-    const clearSubstitutionPlan = () => {
-        setSubstitutionPlan(null);
-        setPeriodSubstitutions({});
-        setShowAdjustments(false);
-    };
-
-    const handleAddAbsentTeacher = () => {
-        if (!selectedTeacher) return;
-        const teacher = teachers.find(t => t.id === selectedTeacher);
-        if (teacher && !absentTeachers.find(t => t.id === teacher.id)) {
-            setAbsentTeachers(prev => [...prev, teacher]);
-            setSelectedTeacher('');
-        }
-    };
-
-    const handleSelectSubstitute = (periodKey, substituteId) => {
-        setPeriodSubstitutions(prev => ({
-            ...prev,
-            [periodKey]: prev[periodKey].map(sub => ({
-                ...sub,
-                selected: sub.substituteId === substituteId
-            }))
-        }));
-    };
-
-
-    const generateMessage = () => {
-        let message = 'Good morning\n';
-        const teacherSubs = {};
-        Object.entries(periodSubstitutions).forEach(([periodKey, subs]) => {
-            const selected = subs.find(sub => sub.selected);
-            if (selected) {
-                const { absentTeacher } = selected.periodInfo;
-                if (!teacherSubs[absentTeacher]) {
-                    teacherSubs[absentTeacher] = [];
-                }
-                teacherSubs[absentTeacher].push(selected);
-            }
-        });
-        Object.entries(teacherSubs).forEach(([absentTeacher, subs]) => {
-            message += `\nSubs for ${absentTeacher}\n`;
-            subs.sort((a, b) => {
-                const timeA = a.periodInfo.time.split(':').map(Number);
-                const timeB = b.periodInfo.time.split(':').map(Number);
-                return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
-            }).forEach(sub => {
-                const periodNum = TEACHING_PERIODS.findIndex(
-                    p => p.time === sub.periodInfo.time
-                ) + 1;
-                message += `P${periodNum} ${sub.periodInfo.class} - ${sub.code}\n`;
-            });
-        });
-
-        setSubstitutionPlan(message);
-    };
-
-    const copyToClipboard = async () => {
-        if (!substitutionPlan) return;
-        try {
-            await navigator.clipboard.writeText(substitutionPlan);
-            setShowCopied(true);
-            setTimeout(() => setShowCopied(false), 2000);
-        } catch (error) {
-            showNotification('Failed to copy to clipboard', 'error');
-        }
-    };
     const generatePlan = async () => {
         if (absentTeachers.length === 0) {
             showNotification('Please select at least one absent teacher', 'error');
@@ -162,8 +104,7 @@ export default function SubstitutionManager() {
                         const availableSubs = await findAvailableTeachersForPeriod(
                             Array.from(occupiedTeachers),
                             currentDay,
-                            period,
-                            date
+                            period
                         );
 
                         if (availableSubs.length > 0) {
@@ -213,29 +154,91 @@ export default function SubstitutionManager() {
         }
     };
 
+    const handleSelectSubstitute = (periodKey, substituteId) => {
+        setPeriodSubstitutions(prev => ({
+            ...prev,
+            [periodKey]: prev[periodKey].map(sub => ({
+                ...sub,
+                selected: sub.substituteId === substituteId
+            }))
+        }));
+    };
+
+    const generateMessage = () => {
+        let message = 'Good morning\n';
+        const teacherSubs = {};
+        
+        Object.entries(periodSubstitutions).forEach(([periodKey, subs]) => {
+            const selected = subs.find(sub => sub.selected);
+            if (selected) {
+                const { absentTeacher } = selected.periodInfo;
+                if (!teacherSubs[absentTeacher]) {
+                    teacherSubs[absentTeacher] = [];
+                }
+                teacherSubs[absentTeacher].push(selected);
+            }
+        });
+
+        Object.entries(teacherSubs).forEach(([absentTeacher, subs]) => {
+            message += `\nSubs for ${absentTeacher}\n`;
+            subs.sort((a, b) => {
+                const timeA = a.periodInfo.time.split(':').map(Number);
+                const timeB = b.periodInfo.time.split(':').map(Number);
+                return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
+            }).forEach(sub => {
+                const periodNum = TEACHING_PERIODS.findIndex(
+                    p => p.time === sub.periodInfo.time
+                ) + 1;
+                message += `P${periodNum} ${sub.periodInfo.class} - ${sub.code}\n`;
+            });
+        });
+
+        setSubstitutionPlan(message);
+    };
+
+    const clearSubstitutionPlan = () => {
+        setSubstitutionPlan(null);
+        setPeriodSubstitutions({});
+        setShowAdjustments(false);
+        setAbsentTeachers([]);
+        showNotification('Substitution plan cleared');
+    };
+
+    const copyToClipboard = async () => {
+        if (!substitutionPlan) return;
+        try {
+            await navigator.clipboard.writeText(substitutionPlan);
+            setShowCopied(true);
+            setTimeout(() => setShowCopied(false), 2000);
+        } catch (error) {
+            showNotification('Failed to copy to clipboard', 'error');
+        }
+    };
+
     return (
         <div className="space-y-6">
-            <Link
-                to="/m/substitutions"
-                className="flex items-center gap-2 px-3 py-2 text-blue-500 hover:text-blue-600"
-            >
-                <Phone className="h-4 w-4" />
-                Open Mobile Version
-            </Link>
+            <div className="flex justify-between items-center">
+                <Link
+                    to="/m/substitutions"
+                    className="flex items-center gap-2 px-3 py-2 text-blue-500 hover:text-blue-600"
+                >
+                    <Phone className="h-4 w-4" />
+                    Open Mobile Version
+                </Link>
+                {substitutionPlan && (
+                    <button
+                        onClick={clearSubstitutionPlan}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                        Clear Plan
+                    </button>
+                )}
+            </div>
+
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <CardTitle>Generate Substitution Message</CardTitle>
-                        {substitutionPlan && (
-                            <button
-                                onClick={clearSubstitutionPlan}
-                                className="flex items-center gap-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                                Clear Plan
-                            </button>
-                        )}
-                    </div>
+                    <CardTitle>Generate Substitution Message</CardTitle>
                     <div className="space-y-4">
                         <div className="flex gap-4">
                             <select
@@ -245,7 +248,7 @@ export default function SubstitutionManager() {
                             >
                                 <option value="">Select absent teacher</option>
                                 {teachers
-                                    .filter(t => !absentTeachers.some(at => at.id === t.id)) // Filter out already selected teachers
+                                    .filter(t => !absentTeachers.some(at => at.id === t.id))
                                     .map(teacher => (
                                         <option key={teacher.id} value={teacher.id}>
                                             {teacher.code} - {teacher.name}
@@ -259,6 +262,7 @@ export default function SubstitutionManager() {
                                 Add
                             </button>
                         </div>
+
                         {absentTeachers.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {absentTeachers.map(teacher => (
@@ -360,8 +364,8 @@ export default function SubstitutionManager() {
                                                                         generateMessage();
                                                                     }}
                                                                     className={`flex items-center justify-between p-2 rounded ${sub.selected
-                                                                        ? 'bg-green-100 text-green-800 border-2 border-green-500'
-                                                                        : 'bg-gray-50 hover:bg-gray-100'
+                                                                            ? 'bg-green-100 text-green-800 border-2 border-green-500'
+                                                                            : 'bg-gray-50 hover:bg-gray-100'
                                                                         }`}
                                                                 >
                                                                     <div>

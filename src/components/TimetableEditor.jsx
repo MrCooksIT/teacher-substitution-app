@@ -57,28 +57,27 @@ export default function TimetableEditor() {
         loadTimetable();
     }, [selectedTeacher]);
 
-    const handleKeyDown = (e, day, period) => {
-        if (e.ctrlKey || e.metaKey) {
-            if (e.key === 'c') {
-                const value = timetableData[day]?.[period.time];
-                if (value) {
-                    setCopiedValue(value);
-                    showNotification('Cell copied');
+    useEffect(() => {
+        const handleGlobalKeyDown = (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'v' && copiedValue && selectedCell) {
+                    const { day, period } = selectedCell;
+                    setTimetableData(prev => ({
+                        ...prev,
+                        [day]: {
+                            ...prev[day],
+                            [period.time]: copiedValue
+                        }
+                    }));
+                    showNotification('Cell pasted');
+                    e.preventDefault();
                 }
-                e.preventDefault();
-            } else if (e.key === 'v' && copiedValue) {
-                setTimetableData(prev => ({
-                    ...prev,
-                    [day]: {
-                        ...prev[day],
-                        [period.time]: copiedValue
-                    }
-                }));
-                showNotification('Cell pasted');
-                e.preventDefault();
             }
-        }
-    };
+        };
+
+        document.addEventListener('keydown', handleGlobalKeyDown);
+        return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+    }, [copiedValue, selectedCell]);
 
     const handleCellClick = (period, day) => {
         setSelectedCell({ period, day });
@@ -241,8 +240,43 @@ export default function TimetableEditor() {
                                                                 timetableData[day]?.[period.time] === 'FREE' ? 'bg-gray-50' :
                                                                     'hover:bg-gray-50'
                                                             }`}
-                                                        onClick={() => handleCellClick(period, day)}
-                                                        onKeyDown={(e) => handleKeyDown(e, day, period)}
+                                                        onClick={(e) => {
+                                                            if (e.ctrlKey || e.metaKey) {
+                                                                if (e.ctrlKey && e.key === 'c') {
+                                                                    const value = timetableData[day]?.[period.time];
+                                                                    if (value) {
+                                                                        setCopiedValue(value);
+                                                                        showNotification('Cell copied');
+                                                                    }
+                                                                }
+                                                                return;
+                                                            }
+                                                            handleCellClick(period, day);
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.ctrlKey || e.metaKey) {
+                                                                if (e.key === 'c') {
+                                                                    const value = timetableData[day]?.[period.time];
+                                                                    if (value) {
+                                                                        setCopiedValue(value);
+                                                                        showNotification('Cell copied');
+                                                                    }
+                                                                    e.preventDefault();
+                                                                } else if (e.key === 'v') {
+                                                                    if (copiedValue) {
+                                                                        setTimetableData(prev => ({
+                                                                            ...prev,
+                                                                            [day]: {
+                                                                                ...prev[day],
+                                                                                [period.time]: copiedValue
+                                                                            }
+                                                                        }));
+                                                                        showNotification('Cell pasted');
+                                                                    }
+                                                                    e.preventDefault();
+                                                                }
+                                                            }
+                                                        }}
                                                         tabIndex="0"
                                                     >
                                                         {isSelected ? (

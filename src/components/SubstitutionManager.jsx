@@ -6,7 +6,8 @@ import {
     X,
     AlertCircle,
     Edit2,
-    Phone
+    Phone,
+    Trash2
 } from 'lucide-react';
 import { getAllTeachers, getTeacherTimetable } from '../services/timetableService';
 import { useNotification } from '../contexts/NotificationContext';
@@ -258,7 +259,6 @@ export default function SubstitutionManager() {
                                 Add
                             </button>
                         </div>
-
                         {absentTeachers.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {absentTeachers.map(teacher => (

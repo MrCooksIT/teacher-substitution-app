@@ -2,7 +2,7 @@
   "name": "teacher-substitution-app",
   "version": "0.1.0",
   "private": true,
-  "homepage":"https://mrcooksit.github.io/teacher-substitution-app",
+  "homepage": "https://mrcooksit.github.io/teacher-substitution-app",
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.4",
     "@radix-ui/react-slot": "^1.0.2",
@@ -49,6 +49,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "autoprefixer": "^10.4.16",
     "gh-pages": "^6.1.0",
     "postcss": "^8.4.32",

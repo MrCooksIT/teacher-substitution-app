@@ -12,6 +12,7 @@ import {
     formatClassSubject
 } from '../constants/timetable';
 
+
 export default function TimetableEditor() {
     const [loading, setLoading] = useState(true);
     const [teachers, setTeachers] = useState([]);
@@ -19,26 +20,26 @@ export default function TimetableEditor() {
     const [selectedCell, setSelectedCell] = useState(null);
     const [editValue, setEditValue] = useState({ class: '', subject: '' });
     const [timetableData, setTimetableData] = useState({});
-    const [copiedValue, setCopiedValue] = useState(null);
     const { showNotification } = useNotification();
 
-    // Load teachers on component mount
     useEffect(() => {
         const loadTeachers = async () => {
             try {
                 const teachersList = await getAllTeachers();
+                // Sort teachers by code when loading
                 setTeachers(teachersList.sort((a, b) => a.code.localeCompare(b.code)));
                 setLoading(false);
             } catch (error) {
                 showNotification('Failed to load teachers: ' + error.message, 'error');
                 setLoading(false);
             }
+
+
         };
 
         loadTeachers();
     }, []);
 
-    // Load timetable when teacher is selected
     useEffect(() => {
         const loadTimetable = async () => {
             if (!selectedTeacher) return;
@@ -57,26 +58,24 @@ export default function TimetableEditor() {
         loadTimetable();
     }, [selectedTeacher]);
 
-    const handleKeyDown = (e, day, period) => {
-        if (e.ctrlKey || e.metaKey) {
-            if (e.key === 'c') {
-                const value = timetableData[day]?.[period.time];
-                if (value) {
-                    setCopiedValue(value);
-                    showNotification('Cell copied');
-                }
-                e.preventDefault();
-            } else if (e.key === 'v' && copiedValue) {
-                setTimetableData(prev => ({
-                    ...prev,
-                    [day]: {
-                        ...prev[day],
-                        [period.time]: copiedValue
-                    }
-                }));
-                showNotification('Cell pasted');
-                e.preventDefault();
-            }
+
+    const handleSaveTimetable = async () => {
+        if (!selectedTeacher) {
+            showNotification('Please select a teacher first', 'error');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await saveTimetable({
+                teacherId: selectedTeacher,
+                periods: timetableData
+            });
+            showNotification('Timetable saved successfully!');
+        } catch (error) {
+            showNotification('Failed to save timetable: ' + error.message, 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -86,10 +85,10 @@ export default function TimetableEditor() {
         if (currentValue === 'FREE') {
             setEditValue({ class: 'FREE', subject: '' });
         } else if (currentValue) {
-            const [classValue, ...subjectParts] = currentValue.split(' ');
+            const [classValue, subjectValue] = currentValue.split(' ');
             setEditValue({
                 class: classValue || '',
-                subject: subjectParts.join(' ') || ''
+                subject: subjectValue || ''
             });
         } else {
             setEditValue({ class: '', subject: '' });
@@ -115,42 +114,6 @@ export default function TimetableEditor() {
         setSelectedCell(null);
     };
 
-    const handleDirectInput = (value, type) => {
-        if (type === 'grade') {
-            let formattedValue = value.toUpperCase();
-            if (formattedValue === 'F' || formattedValue === 'FREE') {
-                setEditValue({ class: 'FREE', subject: '' });
-                handleCellSave();
-            } else {
-                if (!formattedValue.startsWith('GR')) formattedValue = 'GR' + formattedValue;
-                setEditValue(prev => ({ ...prev, class: formattedValue }));
-            }
-        } else {
-            setEditValue(prev => ({ ...prev, subject: value }));
-            handleCellSave();
-        }
-    };
-
-    const handleSaveTimetable = async () => {
-        if (!selectedTeacher) {
-            showNotification('Please select a teacher first', 'error');
-            return;
-        }
-
-        try {
-            setLoading(true);
-            await saveTimetable({
-                teacherId: selectedTeacher,
-                periods: timetableData
-            });
-            showNotification('Timetable saved successfully!');
-        } catch (error) {
-            showNotification('Failed to save timetable: ' + error.message, 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -161,7 +124,6 @@ export default function TimetableEditor() {
             </div>
         );
     }
-
     const selectedTeacherData = teachers.find(t => t.id === selectedTeacher);
 
     return (
@@ -177,11 +139,13 @@ export default function TimetableEditor() {
                             className="flex-1 p-2 border rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[250px]"
                         >
                             <option value="">Select a teacher</option>
-                            {teachers.map(teacher => (
-                                <option key={teacher.id} value={teacher.id}>
-                                    {teacher.code} - {teacher.name}
-                                </option>
-                            ))}
+                            {teachers
+                                .sort((a, b) => a.code.localeCompare(b.code))
+                                .map(teacher => (
+                                    <option key={teacher.id} value={teacher.id}>
+                                        {teacher.code} - {teacher.name}
+                                    </option>
+                                ))}
                         </select>
                     </div>
                     {selectedTeacher && (
@@ -196,6 +160,8 @@ export default function TimetableEditor() {
                 </div>
             </div>
 
+            {/* Timetable */}
+            {/* Creates Grid interface in which drop down menues will appear and be populated via GRADE AND SUBJECT Constants */}
             {selectedTeacher ? (
                 <Card className="shadow-lg">
                     <CardHeader className="border-b">
@@ -204,9 +170,6 @@ export default function TimetableEditor() {
                             <CardTitle>
                                 {selectedTeacherData ? `${selectedTeacherData.code}'s Timetable` : 'Teacher Timetable'}
                             </CardTitle>
-                        </div>
-                        <div className="text-sm text-gray-500">
-                            Tip: Use Ctrl+C to copy and Ctrl+V to paste cells
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -238,87 +201,63 @@ export default function TimetableEditor() {
                                                     <td
                                                         key={day}
                                                         className={`p-3 border-l cursor-pointer transition-colors min-w-[180px] max-w-[180px] ${isSelected ? 'bg-blue-50' :
-                                                                timetableData[day]?.[period.time] === 'FREE' ? 'bg-gray-50' :
-                                                                    'hover:bg-gray-50'
+                                                            timetableData[day]?.[period.time] === 'FREE' ? 'bg-gray-50' :
+                                                                'hover:bg-gray-50'
                                                             }`}
                                                         onClick={() => handleCellClick(period, day)}
-                                                        onKeyDown={(e) => handleKeyDown(e, day, period)}
-                                                        tabIndex="0"
                                                     >
                                                         {isSelected ? (
                                                             <div className="relative p-2 bg-white shadow-lg rounded-lg border"
                                                                 onClick={e => e.stopPropagation()}
+                                                                style={{ minWidth: '200px', maxWidth: '300px' }}
                                                             >
                                                                 <div className="space-y-2">
-                                                                    <div className="flex gap-2">
-                                                                        <select
-                                                                            value={editValue.class}
-                                                                            onChange={e => setEditValue(prev => ({ ...prev, class: e.target.value }))}
-                                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                                                                        >
-                                                                            <option value="">Select Grade</option>
-                                                                            <option value="FREE">Free Period</option>
-                                                                            {CLASSES.map(cls => (
-                                                                                <option key={cls} value={cls}>{cls}</option>
-                                                                            ))}
-                                                                        </select>
-                                                                        <input
-                                                                            type="text"
-                                                                            placeholder="Or type (F/Gr12)"
-                                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                                                                            onKeyDown={e => {
-                                                                                if (e.key === 'Enter') {
-                                                                                    handleDirectInput(e.target.value, 'grade');
-                                                                                }
-                                                                            }}
-                                                                            autoFocus
-                                                                        />
-                                                                    </div>
+                                                                    <select
+                                                                        value={editValue.class}
+                                                                        onChange={e => setEditValue(prev => ({ ...prev, class: e.target.value }))}
+                                                                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                                                        size={1}
+                                                                        autoFocus
+                                                                    >
+                                                                        <option value="">Select Grade</option>
+                                                                        <option value="FREE">Free Period</option>
+                                                                        {CLASSES.map(cls => (
+                                                                            <option key={cls} value={cls}>{cls}</option>
+                                                                        ))}
+                                                                    </select>
 
                                                                     {editValue.class && editValue.class !== 'FREE' && (
-                                                                        <div className="flex gap-2">
-                                                                            <select
-                                                                                value={editValue.subject}
-                                                                                onChange={e => setEditValue(prev => ({ ...prev, subject: e.target.value }))}
-                                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                                                                            >
-                                                                                <option value="">Select Subject</option>
-                                                                                {SUBJECTS.map(subject => (
-                                                                                    <option key={subject} value={subject}>{subject}</option>
-                                                                                ))}
-                                                                            </select>
-                                                                            <input
-                                                                                type="text"
-                                                                                placeholder="Or type subject"
-                                                                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                                                                                onKeyDown={e => {
-                                                                                    if (e.key === 'Enter') {
-                                                                                        handleDirectInput(e.target.value, 'subject');
-                                                                                    }
-                                                                                }}
-                                                                            />
-                                                                        </div>
+                                                                        <select
+                                                                            value={editValue.subject}
+                                                                            onChange={e => setEditValue(prev => ({ ...prev, subject: e.target.value }))}
+                                                                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                                                            size={1}
+                                                                        >
+                                                                            <option value="">Select Subject</option>
+                                                                            {SUBJECTS.map(subject => (
+                                                                                <option key={subject} value={subject}>{subject}</option>
+                                                                            ))}
+                                                                        </select>
                                                                     )}
 
-                                                                    <div className="flex justify-between items-center">
-                                                                        <div className="text-sm text-gray-500">
-                                                                            Press Enter to save
-                                                                        </div>
-                                                                        <div className="flex gap-2">
-                                                                            <button
-                                                                                onClick={() => setSelectedCell(null)}
-                                                                                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
-                                                                            >
-                                                                                Cancel
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={handleCellSave}
-                                                                                className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-1"
-                                                                            >
-                                                                                <Save className="h-4 w-4" />
-                                                                                Save
-                                                                            </button>
-                                                                        </div>
+                                                                    <div className="flex justify-end gap-2">
+                                                                        <button
+                                                                            onClick={() => setSelectedCell(null)}
+                                                                            className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                if (editValue.class === 'FREE' || (editValue.class && editValue.subject)) {
+                                                                                    handleCellSave();
+                                                                                }
+                                                                            }}
+                                                                            className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-1"
+                                                                        >
+                                                                            <Save className="h-4 w-4" />
+                                                                            Save
+                                                                        </button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -339,12 +278,14 @@ export default function TimetableEditor() {
                     </CardContent>
                 </Card>
             ) : (
+
                 <div className="bg-white rounded-lg shadow-sm p-12 text-center border">
                     <UserCircle2 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Teacher Selected</h3>
                     <p className="text-gray-500">Please select a teacher to view or edit their timetable.</p>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
